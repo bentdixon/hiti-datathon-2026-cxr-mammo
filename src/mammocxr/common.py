@@ -6,8 +6,14 @@ training, data loading, etc.
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (average_precision_score, brier_score_loss, precision_score,
-                             recall_score, roc_auc_score, roc_curve)
+from sklearn.metrics import (
+    average_precision_score,
+    brier_score_loss,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+    roc_curve,
+)
 
 OUTCOMES = ["t2dm", "htn", "hld", "ckd"]
 
@@ -329,7 +335,7 @@ def recall_at_alert_rate(y, proba, rate):
     precision (fraction of flagged patients who carry it). A model with no signal
     captures `rate` of them, so compare recall against the alert rate itself.
     """
-    k = max(int(round(rate * len(y))), 1)
+    k = max(round(rate * len(y)), 1)
     flagged = np.zeros(len(y), dtype=int)
     flagged[np.argsort(-proba)[:k]] = 1
     return (recall_score(y, flagged, zero_division=0),
@@ -361,7 +367,7 @@ def gains_table(y, proba, rates=GAINS_RATES):
     cum = np.cumsum(y[order])
     rows = []
     for r in rates:
-        k = max(int(round(r * len(y))), 1)
+        k = max(round(r * len(y)), 1)
         tp = int(cum[k - 1])
         rows.append({
             "alert_rate": r,

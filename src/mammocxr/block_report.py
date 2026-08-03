@@ -90,11 +90,11 @@ def sentence(row, deltas):
     block = LABELS.get(row["block"], row["block"])
 
     parts = [
-        f"For {outcome} (n={int(row['n_patients']):,}, "
-        f"{row['prevalence']:.0%} already coded at index), {block} ranks patients "
-        f"with AUROC {row['auroc']:.3f}"
-        f"{_ci(row.get('auroc_lo'), row.get('auroc_hi'))}, "
-        f"{_describe(DISCRIMINATION, row['auroc'])} discrimination"
+        (f"For {outcome} (n={int(row['n_patients']):,}, "
+         f"{row['prevalence']:.0%} already coded at index), {block} ranks patients "
+         f"with AUROC {row['auroc']:.3f}"
+         f"{_ci(row.get('auroc_lo'), row.get('auroc_hi'))}, "
+         f"{_describe(DISCRIMINATION, row['auroc'])} discrimination")
     ]
 
     # AUPRC is only interpretable against this outcome's own base rate, which

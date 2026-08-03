@@ -25,7 +25,6 @@ Usage:
 
 import argparse
 
-import numpy as np
 import pandas as pd
 
 DISCRIMINATION = ((0.80, "strong"), (0.70, "moderate"), (0.60, "modest"),

@@ -68,10 +68,26 @@ from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, StandardScaler
 
-from .common import (DATE_COLS, DEFAULT_DEMOGRAPHICS, DEMOGRAPHIC_GROUPS,
-                     EMBEDDING_GROUPS, MISSING_LEVEL, OUTCOMES, RESTRICTIONS, _levels,
-                     apply_restriction, assign_groups, block_columns, cap_index_gap,
-                     delta_auc, eligible_mask, gains_table, metrics, simulate, subgroups)
+from .common import (
+    DATE_COLS,
+    DEFAULT_DEMOGRAPHICS,
+    DEMOGRAPHIC_GROUPS,
+    EMBEDDING_GROUPS,
+    MISSING_LEVEL,
+    OUTCOMES,
+    RESTRICTIONS,
+    _levels,
+    apply_restriction,
+    assign_groups,
+    block_columns,
+    cap_index_gap,
+    delta_auc,
+    eligible_mask,
+    gains_table,
+    metrics,
+    simulate,
+    subgroups,
+)
 
 # Groups whose absence is normal rather than a degraded fit.
 OPTIONAL_GROUPS = {"demo_other"}

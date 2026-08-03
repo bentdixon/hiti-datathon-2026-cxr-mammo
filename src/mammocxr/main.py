@@ -24,8 +24,9 @@ import json
 from pathlib import Path
 
 from . import linear, nonlinear
+from .cohort import OUTCOMES as COHORT_OUTCOMES
+from .cohort import build_cohort
 from .common import simulate
-from .cohort import build_cohort, OUTCOMES as COHORT_OUTCOMES
 
 
 def run_linear_grid(df, args, outdir):

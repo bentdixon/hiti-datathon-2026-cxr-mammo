@@ -124,7 +124,7 @@ def screen(df, prefixes=DEFAULT_PREFIXES, out_path=None):
             rows.append({**q, "seconds": round(time.time() - t0, 1)})
             print(f"    dim {Z.shape[1]}, n {Z.shape[0]}, rankme {rows[-1]['rankme']}, "
                   f"{rows[-1]['seconds']}s", flush=True)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 -- one bad block must not abort the whole screen
             rows.append({"embedding": name, "error": f"{type(e).__name__}: {e}"})
             print(f"    failed: {type(e).__name__}: {e}", flush=True)
 

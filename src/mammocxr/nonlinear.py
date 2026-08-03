@@ -53,15 +53,27 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.preprocessing import StandardScaler
+from torch import nn
 
 from . import common
-from .common import (DEFAULT_DEMOGRAPHICS, DEMOGRAPHIC_GROUPS, EMBEDDING_GROUPS,
-                     OUTCOMES, RESTRICTIONS, apply_restriction, assign_groups,
-                     cap_index_gap, delta_auc, eligible_mask, gains_table, metrics,
-                     simulate, subgroups)
+from .common import (
+    DEFAULT_DEMOGRAPHICS,
+    DEMOGRAPHIC_GROUPS,
+    EMBEDDING_GROUPS,
+    OUTCOMES,
+    RESTRICTIONS,
+    apply_restriction,
+    assign_groups,
+    cap_index_gap,
+    delta_auc,
+    eligible_mask,
+    gains_table,
+    metrics,
+    simulate,
+    subgroups,
+)
 
 # Canonical modality order. Fixed here so the gate always means "weight on
 # mammography" and never silently flips because a dict iterated differently.
@@ -507,17 +519,23 @@ def crossval(df, y, arch, modalities, seed, hp, device, verbose=True):
         # the offset carries no information from validation or test patients.
         if use_offset:
             cf = scaler.transform({"clinical": clin_all[fit_i]})["clinical"]
-            lr_model, lr_coef, lr_C = fit_clinical_offset(cf, y[fit_i], seed)
+            lr_model, lr_coef, _ = fit_clinical_offset(cf, y[fit_i], seed)
             wide_coefs.append(lr_coef)
 
+        # prep() closes over `scaler` and `lr_model`, which ruff (B023) flags as
+        # loop-variable capture: if this closure escaped the loop and were called
+        # later, it would see whichever fold happened to run last. It does not
+        # escape -- every call (three lines below) happens inside this same
+        # iteration, before the next iteration rebinds either name -- so the
+        # capture is safe here, not the late-binding bug the rule exists to catch.
         def prep(idx):
-            t = scaler.transform({m: blocks_all[m][idx] for m in dims}
+            t = scaler.transform({m: blocks_all[m][idx] for m in dims}  # noqa: B023
                                  | {"clinical": clin_all[idx]})
             b, c, yy = to_device({m: t[m] for m in dims}, t["clinical"], y[idx], device)
             off = None
             if use_offset:
                 off = torch.from_numpy(
-                    lr_model.decision_function(t["clinical"]).astype(np.float32)).to(device)
+                    lr_model.decision_function(t["clinical"]).astype(np.float32)).to(device)  # noqa: B023
             return {"blocks": b, "clin": c, "y": yy, "offset": off}
 
         train, val, test = prep(fit_i), prep(val_i), prep(te)
