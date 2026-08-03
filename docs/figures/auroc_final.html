@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AUROC by outcome and feature block</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'DM Sans', sans-serif; background: #ffffff; margin: 0; padding: 24px; }
+  .legend { display:flex; flex-wrap:wrap; gap:16px; margin-bottom:10px; font-size:12px; color:#6b6b66; }
+  .legend span { display:flex; align-items:center; gap:4px; }
+  .swatch { width:10px; height:10px; border-radius:2px; }
+  .chart-wrap { position:relative; width:100%; max-width:900px; height:460px; }
+</style>
+</head>
+<body>
+
+<div class="legend">
+  <span><span class="swatch" style="background:#898781"></span>Clinical</span>
+  <span><span class="swatch" style="background:#e87ba4"></span>Mammo</span>
+  <span><span class="swatch" style="background:#2a78d6"></span>CXR</span>
+  <span><span class="swatch" style="background:#eda100"></span>Mammo+CXR</span>
+  <span><span class="swatch" style="background:#1baf7a"></span>Full fused</span>
+</div>
+
+<div class="chart-wrap">
+  <canvas id="aurocChart" role="img" aria-label="Grouped bar chart of AUROC by outcome and feature block">AUROC values across feature blocks and outcomes.</canvas>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const labels = ['T2DM', 'HTN', 'HLD', 'CKD*'];
+
+const datasets = [
+  { label: 'Clinical',   data: [0.6936, 0.7883, 0.7441, 0.5702], backgroundColor: '#898781' },
+  { label: 'Mammo',      data: [0.7425, 0.7601, 0.6889, 0.6809], backgroundColor: '#e87ba4' },
+  { label: 'CXR',        data: [0.7437, 0.8009, 0.7058, 0.7123], backgroundColor: '#2a78d6' },
+  { label: 'Mammo+CXR',  data: [0.7675, 0.8098, 0.7166, 0.7312], backgroundColor: '#eda100' },
+  { label: 'Full fused', data: [0.7699, 0.8148, 0.7289, 0.7327], backgroundColor: '#1baf7a' },
+];
+
+const gridColor = '#e1e0d9';
+const axisColor = '#c3c2b7';
+const mutedText = '#6b6b66';
+const primaryText = '#0b0b0b';
+
+new Chart(document.getElementById('aurocChart'), {
+  type: 'bar',
+  data: { labels, datasets },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: { top: 28 } },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(3) }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: primaryText, font: { family: "'DM Sans', sans-serif", size: 13, weight: 700 } },
+        grid: { display: false },
+        border: { color: axisColor }
+      },
+      y: {
+        min: 0.50, max: 0.87,
+        ticks: {
+          color: mutedText,
+          font: { family: "'DM Sans', sans-serif", size: 11 },
+          callback: v => v.toFixed(2),
+          stepSize: 0.05
+        },
+        grid: { color: gridColor, lineWidth: 1 },
+        border: { display: false },
+        title: { display: true, text: 'AUROC', color: mutedText, font: { family: "'DM Sans', sans-serif", size: 12 } }
+      }
+    }
+  },
+  plugins: [
+    {
+      // value label above every bar
+      id: 'valueLabels',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        ctx.font = "500 9px 'DM Sans', sans-serif";
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#3a3a37';
+        chart.data.datasets.forEach((ds, di) => {
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((bar, i) => {
+            ctx.fillText(ds.data[i].toFixed(3), bar.x, bar.y - 5);
+          });
+        });
+      }
+    },
+    {
+      // green star above the best-performing block in each outcome group
+      id: 'winnerStar',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const n = labels.length;
+        for (let i = 0; i < n; i++) {
+          let bestDi = 0, bestVal = -Infinity;
+          chart.data.datasets.forEach((ds, di) => {
+            if (ds.data[i] > bestVal) { bestVal = ds.data[i]; bestDi = di; }
+          });
+          const bar = chart.getDatasetMeta(bestDi).data[i];
+          ctx.font = "16px 'DM Sans', sans-serif";
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#1baf7a';
+          ctx.fillText('\u2605', bar.x, bar.y - 20);
+        }
+      }
+    }
+  ]
+});
+</script>
+
+</body>
+</html>

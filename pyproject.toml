@@ -1,0 +1,53 @@
+[project]
+name = "mammo-cxr-fusion"
+version = "0.1.0"
+description = "Do mammography and chest X-ray foundation-model embeddings predict clinical risk factors better together than alone?"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "pyarrow>=14.0",
+    "scikit-learn>=1.3",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+]
+
+[project.optional-dependencies]
+# Only nonlinear.py needs torch. It is a large download, so it is kept out of
+# the default install: `uv sync --extra nonlinear` when that arm is run.
+nonlinear = ["torch>=2.1"]
+
+[dependency-groups]
+dev = ["ruff>=0.6"]
+
+# The pipeline is an installed package (src/mammocxr/), so every module is
+# importable the same way regardless of current directory, `python -m`, or a
+# test runner -- none of which a sys.path.insert hack in each script supports.
+# `uv sync` installs it in editable mode; every command below then runs either
+# as `uv run mammocxr-<name> ...` (a script below) or `uv run python -m
+# mammocxr.<module> ...`.
+[project.scripts]
+mammocxr = "mammocxr.main:main"
+mammocxr-cohort = "mammocxr.cohort:main"
+mammocxr-simulate = "mammocxr.simulate:main"
+mammocxr-linear = "mammocxr.linear:main"
+mammocxr-nonlinear = "mammocxr.nonlinear:main"
+mammocxr-screen = "mammocxr.screen:main"
+mammocxr-block-report = "mammocxr.block_report:main"
+mammocxr-subgroup-reading = "mammocxr.subgroup_reading:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# project.name normalises to "mammo-cxr-fusion", not "mammocxr", so hatchling's
+# default src-layout autodetection (which matches on name) would miss the
+# package; point it at the directory explicitly instead.
+[tool.hatch.build.targets.wheel]
+packages = ["src/mammocxr"]
+
+[tool.ruff]
+line-length = 100

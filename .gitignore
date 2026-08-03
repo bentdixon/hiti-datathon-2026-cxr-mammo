@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# uv-managed environment. uv.lock IS tracked, so the resolution is reproducible.
+.venv/
+
+# External clone, tracked in its own repository
+RadHarmony/
+
+# Analysis outputs and downloaded result tables. Narrowed to results/ rather
+# than a blanket *.csv/*.png/*.pdf/*.parquet, so committed reference figures
+# (docs/figures/) and any future example results directory are trackable.
+results/
+*.parquet
+
+# Local assistant config, not part of the pipeline
+CLAUDE.md
+.claude/
+
+# Local Quarto/pandoc markdown preview render, not part of the pipeline
+README.html
+README_files/

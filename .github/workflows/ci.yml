@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install the project (with the nonlinear extra, for the full smoke run)
+        run: uv sync --extra nonlinear --group dev
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Smoke test -- linear arm on simulated data
+        run: |
+          uv run mammocxr-linear --outdir /tmp/ci-results \
+            --outcomes t2dm --blocks mammo cxr mammo+cxr \
+            --n-boot 20 --subgroup-boot 0
+          test -f /tmp/ci-results/performance.csv
+          test -f /tmp/ci-results/deltas.csv
+          test -f /tmp/ci-results/gains.csv
+
+      - name: Smoke test -- nonlinear arm on simulated data
+        run: |
+          uv run mammocxr-nonlinear --outdir /tmp/ci-results \
+            --outcomes t2dm --archs early --configs mammo+cxr --seeds 0 \
+            --n-boot 0
+          test -f /tmp/ci-results/nl_performance.csv
+
+      - name: Smoke test -- full grid via the mammocxr entry point
+        run: |
+          uv run mammocxr --outdir /tmp/ci-results-grid \
+            --outcomes t2dm --blocks mammo cxr mammo+cxr \
+            --archs early --configs mammo+cxr --seeds 0 \
+            --linear-n-boot 0 --subgroup-boot 0
+          test -f /tmp/ci-results-grid/performance.csv
+          test -f /tmp/ci-results-grid/nl_performance.csv
+
+      - name: Smoke test -- encoder screen and reporting scripts
+        run: |
+          uv run mammocxr-screen --demo
+          uv run mammocxr-block-report --indir /tmp/ci-results-grid \
+            --out /tmp/ci-results-grid/block_outcomes.csv

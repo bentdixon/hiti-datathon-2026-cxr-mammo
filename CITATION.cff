@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software or its results, please cite it using the
+  metadata below.
+title: >-
+  Mammography + Chest X-ray Risk Subtyping: Multimodal Foundation-Model
+  Fusion for Clinical Risk Factor Detection
+type: software
+version: 0.1.0
+date-released: "2026-08-03"
+license: MIT
+repository-code: "https://github.com/bentdixon/hiti-datathon-2026-cxr-mammo"
+abstract: >-
+  Assesses whether combining mammography and chest X-ray foundation-model
+  embeddings improves detection of prevalent clinical risk factors (type 2
+  diabetes, hypertension, hyperlipidaemia, chronic kidney disease) over
+  either modality alone, via a penalised-logistic-regression arm and three
+  nonlinear fusion architectures, reported per outcome and per subgroup.
+  Developed for the HITI Lab's 2026 Datathon.
+authors:
+  - given-names: Aafi
+    family-names: Mansuri
+  - given-names: Meghana Reddy
+    family-names: Dropathi
+  - given-names: Benjamin
+    family-names: Dixon
+  - given-names: Behjat
+    family-names: Riyaz
+  - given-names: Leyla
+    family-names: Warsame
+  - given-names: Nikola
+    family-names: Tanasijevic
+  - given-names: Loyani
+    family-names: Loyani
+  - given-names: InChan
+    family-names: Hwang

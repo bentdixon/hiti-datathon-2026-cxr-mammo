@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AUPRC by outcome and feature block</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'DM Sans', sans-serif; background: #ffffff; margin: 0; padding: 24px; }
+  .legend { display:flex; flex-wrap:wrap; gap:16px; margin-bottom:10px; font-size:12px; color:#6b6b66; }
+  .legend span { display:flex; align-items:center; gap:4px; }
+  .swatch { width:10px; height:10px; border-radius:2px; }
+  .baseline-swatch { width:16px; height:0; border-top:2px dashed #d62728; }
+  .chart-wrap { position:relative; width:100%; max-width:900px; height:460px; }
+</style>
+</head>
+<body>
+
+<div class="legend">
+  <span><span class="swatch" style="background:#898781"></span>Clinical</span>
+  <span><span class="swatch" style="background:#e87ba4"></span>Mammo</span>
+  <span><span class="swatch" style="background:#2a78d6"></span>CXR</span>
+  <span><span class="swatch" style="background:#eda100"></span>Mammo+CXR</span>
+  <span><span class="swatch" style="background:#1baf7a"></span>Full fused</span>
+  <span><span class="baseline-swatch"></span>Prevalence (random-classifier floor)</span>
+</div>
+
+<div class="chart-wrap">
+  <canvas id="auprcChart" role="img" aria-label="Grouped bar chart of AUPRC by outcome and feature block">AUPRC values across feature blocks and outcomes.</canvas>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const labels = ['T2DM', 'HTN', 'HLD', 'CKD*'];
+
+const datasets = [
+  { label: 'Clinical',   data: [0.4589, 0.8847, 0.7300, 0.2618], backgroundColor: '#898781' },
+  { label: 'Mammo',      data: [0.5421, 0.8655, 0.6835, 0.4003], backgroundColor: '#e87ba4' },
+  { label: 'CXR',        data: [0.5137, 0.8900, 0.6936, 0.4626], backgroundColor: '#2a78d6' },
+  { label: 'Mammo+CXR',  data: [0.5586, 0.8945, 0.7067, 0.4988], backgroundColor: '#eda100' },
+  { label: 'Full fused', data: [0.5616, 0.8978, 0.7203, 0.4995], backgroundColor: '#1baf7a' },
+];
+
+// prevalence = n_pos / n for each outcome; this is the AUPRC floor for a random classifier
+const prevalence = {
+  'T2DM': 1538 / 5271,
+  'HTN':  3646 / 5271,
+  'HLD':  2774 / 5271,
+  'CKD*': 798  / 3646,
+};
+
+const gridColor = '#e1e0d9';
+const axisColor = '#c3c2b7';
+const mutedText = '#6b6b66';
+const primaryText = '#0b0b0b';
+
+new Chart(document.getElementById('auprcChart'), {
+  type: 'bar',
+  data: { labels, datasets },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: { top: 28 } },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(3) }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: primaryText, font: { family: "'DM Sans', sans-serif", size: 13, weight: 700 } },
+        grid: { display: false },
+        border: { color: axisColor }
+      },
+      y: {
+        min: 0, max: 1.0,
+        ticks: {
+          color: mutedText,
+          font: { family: "'DM Sans', sans-serif", size: 11 },
+          callback: v => v.toFixed(2),
+          stepSize: 0.1
+        },
+        grid: { color: gridColor, lineWidth: 1 },
+        border: { display: false },
+        title: { display: true, text: 'AUPRC', color: mutedText, font: { family: "'DM Sans', sans-serif", size: 12 } }
+      }
+    }
+  },
+  plugins: [
+    {
+      id: 'valueLabels',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        ctx.font = "500 9px 'DM Sans', sans-serif";
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#3a3a37';
+        chart.data.datasets.forEach((ds, di) => {
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((bar, i) => {
+            ctx.fillText(ds.data[i].toFixed(3), bar.x, bar.y - 5);
+          });
+        });
+      }
+    },
+    {
+      // dashed red line at each outcome's prevalence -- the AUPRC floor for that outcome
+      id: 'prevalenceBaseline',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const xScale = chart.scales.x;
+        const yScale = chart.scales.y;
+        ctx.save();
+        ctx.strokeStyle = '#d62728';
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([5, 4]);
+        labels.forEach((label, i) => {
+          const p = prevalence[label];
+          const y = yScale.getPixelForValue(p);
+          const groupWidth = xScale.getPixelForValue(1) - xScale.getPixelForValue(0);
+          const xCenter = xScale.getPixelForValue(i);
+          const xStart = xCenter - groupWidth * 0.42;
+          const xEnd = xCenter + groupWidth * 0.42;
+          ctx.beginPath();
+          ctx.moveTo(xStart, y);
+          ctx.lineTo(xEnd, y);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+    }
+  ]
+});
+</script>
+
+</body>
+</html>
